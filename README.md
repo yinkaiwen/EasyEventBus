@@ -1,0 +1,2 @@
+# EasyEventBus
+Simplified EventBus
