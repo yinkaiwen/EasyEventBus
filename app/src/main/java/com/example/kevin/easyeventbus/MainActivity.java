@@ -1,6 +1,8 @@
 package com.example.kevin.easyeventbus;
 
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -76,11 +78,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setText(p);
     }
 
+    private Handler mHandler;
 
     private void setText(Person p) {
-        String rs = String.format("setText_thread_name : %s \r\n s : %s",
+        final String rs = String.format("setText_thread_name : %s \r\n s : %s",
                 Thread.currentThread().getName(), p.toString());
-        mTv_info.setText(rs);
+        if(mHandler == null){
+            mHandler = new Handler(Looper.getMainLooper());
+        }
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                mTv_info.setText(rs);
+            }
+        };
+        mHandler.post(task);
         Print.i(tag, rs);
     }
 
@@ -95,4 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         EasyEventBus.getDefault().unRegister(this);
         super.onStop();
     }
+
+
+
 }
