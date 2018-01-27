@@ -3,8 +3,7 @@ package eventhandler;
 import android.os.Handler;
 import android.os.Looper;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import wrap.Subscription;
 
 
 /**
@@ -12,24 +11,22 @@ import java.lang.reflect.Method;
  * https://github.com/yinkaiwen
  */
 
-public class UIHandler {
+public class UIHandler implements TaskHandler {
 
-    static <T> void post(final Method method, final T obj, final Object arg) {
-        Handler handler = new Handler(Looper.getMainLooper());
+    private Handler mHandler;
+    private TaskHandler mTaskHandler = new PostHandler();
 
+    @Override
+    public void post(final Subscription subscription, final Object arg) {
+        if (mHandler == null) {
+            mHandler = new Handler(Looper.getMainLooper());
+        }
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                try {
-                    method.invoke(obj, arg);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                }
+                mTaskHandler.post(subscription, arg);
             }
         };
-
-        handler.post(task);
+        mHandler.post(task);
     }
 }

@@ -1,12 +1,23 @@
 package core;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import android.text.TextUtils;
 
-import wrap.EventType;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import easyeventbusenum.EasyEventBusModel;
+import eventhandler.AsyncHandler;
+import eventhandler.PostHandler;
+import eventhandler.TaskHandler;
+import eventhandler.UIHandler;
+import seekmethods.SeekMethodsIncludeInterface;
+import seekmethods.SeekMethodsModel;
+import wrap.EventTagAndParameter;
 import wrap.Subscriber;
+import wrap.Subscription;
 
 /**
  * Created by kevin on 2018/1/25.
@@ -18,10 +29,21 @@ public class EasyEventBus {
     private static final String tag = EasyEventBus.class.getSimpleName();
 
     private static EasyEventBus instance = null;
-    private HashMap<Object, List<EventType>> map;
+    private static Map<EventTagAndParameter, CopyOnWriteArrayList<Subscription>> mCache;
+    private static SubsciberMethodFinder sMethodFinder;
+    private static ThreadLocal<Queue<EventTagAndParameter>> sLocal = new ThreadLocal<Queue<EventTagAndParameter>>() {
+        @Override
+        protected Queue<EventTagAndParameter> initialValue() {
+            return new ConcurrentLinkedQueue<>();
+        }
+    };
+
+
+    private Dispatcher mDispatcher = new Dispatcher();
 
     private EasyEventBus() {
-        map = new HashMap<>();
+        mCache = new HashMap<>();
+        sMethodFinder = new SubsciberMethodFinder(mCache);
     }
 
     public static EasyEventBus getDefault() {
@@ -35,50 +57,101 @@ public class EasyEventBus {
         return instance;
     }
 
-    public void register(Object object) {
-        if (map.containsKey(object))
-            throw new RuntimeException("This object has been registered.");
+    public void register(Object subscriber) {
+        if (subscriber == null)
+            return;
 
-        List<EventType> subs = new ArrayList<>();
-        Class<?> cls = object.getClass();
-        Method[] methods = cls.getDeclaredMethods();
-        if (methods == null || methods.length == 0)
-            throw new IllegalArgumentException("This object has no any method");
-        for (Method m : methods) {
-            Subscriber s = m.getAnnotation(Subscriber.class);
-            if (s != null) {
-                EventType type = new EventType();
-                type.model = s.model();
-                type.tag = s.tag();
-                type.method = m;
-                Class<?>[] parameterTypes = m.getParameterTypes();
-                if(parameterTypes != null && parameterTypes.length == 1){
-                    type.parameterClass = m.getParameterTypes()[0];
-                }else {
-                    throw new IllegalArgumentException("Use @Subscriber should use only one type.");
-                }
-                subs.add(type);
+        synchronized (this) {
+            sMethodFinder.subscribe(subscriber);
+        }
+    }
+
+    public void unregister(Object subscriber) {
+        if (subscriber == null)
+            return;
+        synchronized (this) {
+            sMethodFinder.unregister(subscriber);
+        }
+    }
+
+    public <T> void post(T arg) {
+        post(arg, Subscriber.DEFAULT_TAG);
+    }
+
+    public <T> void post(T arg, String tag) {
+        if (arg != null && !TextUtils.isEmpty(tag)) {
+            sLocal.get().offer(new EventTagAndParameter(tag, arg.getClass()));
+        }
+        mDispatcher.dispatch(arg);
+    }
+
+    public void setSeekMethodModel(SeekMethodsModel methodModel) {
+        mDispatcher.setMethodsModel(methodModel);
+    }
+
+    public SeekMethodsModel getSeekMethodModel() {
+        return mDispatcher.getMethodsModel();
+    }
+
+
+    private class Dispatcher {
+        private AsyncHandler mAsyncHandler = new AsyncHandler();
+        private PostHandler mPostHandler = new PostHandler();
+        private UIHandler mUIHandler = new UIHandler();
+        private SeekMethodsModel mMethodsModel = new SeekMethodsIncludeInterface();
+
+        private Map<EventTagAndParameter, CopyOnWriteArrayList<EventTagAndParameter>> mCacheList = new HashMap<>();
+
+        void dispatch(Object arg) {
+            Queue<EventTagAndParameter> queue = sLocal.get();
+
+            while (!queue.isEmpty()) {
+                EventTagAndParameter event = queue.poll();
+                handle(event, arg);
             }
         }
 
-        map.put(object, subs);
-    }
+        private void handle(EventTagAndParameter event, Object arg) {
+            CopyOnWriteArrayList<EventTagAndParameter> list = mCacheList.get(event);
 
-    public void unRegister(Object object) {
-        if (!map.containsKey(object))
-            throw new RuntimeException("This object has not been registered.");
-        List<EventType> remove = map.remove(object);
-        for (EventType m : remove) {
-            String name = m.method.getName();
-            Print.i(tag, String.format("method_name --> %s", name));
+            if (list == null || list.isEmpty()) {
+                list = mMethodsModel.getMethodEvent(event);
+            }
+
+            if (list.isEmpty())
+                return;
+            mCacheList.put(event,list);
+            TaskHandler handler = null;
+            for (EventTagAndParameter e : list) {
+                CopyOnWriteArrayList<Subscription> subscriptions = mCache.get(e);
+                if (subscriptions == null)
+                    continue;
+                for (Subscription subscription : subscriptions) {
+                    handler = getHandler(subscription.model);
+                    handler.post(subscription, arg);
+                }
+            }
+        }
+
+        private TaskHandler getHandler(EasyEventBusModel model) {
+            TaskHandler handler = null;
+            if (EasyEventBusModel.ASYNC.equals(model))
+                handler = mAsyncHandler;
+            if (EasyEventBusModel.POST.equals(model))
+                handler = mPostHandler;
+            if (EasyEventBusModel.UI.equals(model))
+                handler = mUIHandler;
+            return handler;
+        }
+
+        public SeekMethodsModel getMethodsModel() {
+            return mMethodsModel;
+        }
+
+        public void setMethodsModel(SeekMethodsModel methodsModel) {
+            mMethodsModel = methodsModel;
         }
     }
 
-    public <T> void post(T obj) {
-        post(obj, Subscriber.DEFAULT_TAG);
-    }
 
-    public <T> void post(T obj, String tag) {
-        SubsciberMethodHunter.post(obj, tag, map);
-    }
 }

@@ -16,9 +16,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name=".BtnFirstService"/>
-        <service android:name=".BtnSecondService"/>
-        <service android:name=".BtnThirdService"/>
+        <service android:name=".service.BtnFirstService"/>
+        <service android:name=".service.BtnSecondService"/>
+        <service android:name=".service.BtnThirdService"/>
+        <service android:name=".service.BtnFifthService"/>
+        <service android:name=".service.BtnFourthService"/>
     </application>
 
 </manifest>

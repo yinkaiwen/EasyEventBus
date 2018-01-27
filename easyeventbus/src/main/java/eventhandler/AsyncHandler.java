@@ -1,31 +1,49 @@
 package eventhandler;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import android.os.Handler;
+import android.os.HandlerThread;
+
+import wrap.Subscription;
 
 /**
  * Created by kevin on 2018/1/25.
  * https://github.com/yinkaiwen
  */
 
-public class AsyncHandler {
-    static <T> void post(final Method method, final T obj, final Object arg) {
-        Runnable asyncTask = new Runnable() {
+public class AsyncHandler implements TaskHandler {
+
+    private TaskHandler mTaskHandler = new PostHandler();
+    private AsyncTask mAsyncTask = new AsyncTask(AsyncHandler.class.getSimpleName());
+
+    public AsyncHandler() {
+        mAsyncTask.start();
+    }
+
+    @Override
+    public void post(final Subscription subscription, final Object arg) {
+        Runnable task = new Runnable() {
             @Override
             public void run() {
-                try {
-                    method.invoke(obj, arg);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                }
+                mTaskHandler.post(subscription,arg);
             }
         };
+        mAsyncTask.post(task);
+    }
 
-        ExecutorService exe = Executors.newSingleThreadExecutor();
-        exe.execute(asyncTask);
+    class AsyncTask extends HandlerThread{
+
+        private Handler mHandler;
+
+        public AsyncTask(String name) {
+            super(name);
+        }
+
+        public void post(Runnable task){
+            if(mHandler == null){
+                mHandler = new Handler(getLooper());
+            }
+            mHandler.post(task);
+        }
+
     }
 }

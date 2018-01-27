@@ -1,11 +1,12 @@
-package com.example.kevin.easyeventbus;
+package com.example.kevin.easyeventbus.service;
 
 import android.app.IntentService;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 
+import com.example.kevin.easyeventbus.javabean.Person;
+
 import core.EasyEventBus;
-import core.Print;
 
 /**
  * Created by kevin on 2018/1/25.
