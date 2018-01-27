@@ -9,10 +9,11 @@ import wrap.EventTagAndParameter;
 /**
  * Created by kevin on 2018/1/27.
  * https://github.com/yinkaiwen
+ *
+ * You can invoke superclass and interface.
  */
 
 public class SeekMethodsIncludeInterface implements SeekMethodsModel {
-
 
     @Override
     public CopyOnWriteArrayList<EventTagAndParameter> getMethodEvent(EventTagAndParameter event) {
@@ -27,11 +28,9 @@ public class SeekMethodsIncludeInterface implements SeekMethodsModel {
             }else{
                 Print.d(cls.getSimpleName());
             }
-
         }
         return list;
     }
-
 
     private void addInterface(List<EventTagAndParameter> list, Class<?> cls, String tag) {
         if (cls == null || cls.isInterface())

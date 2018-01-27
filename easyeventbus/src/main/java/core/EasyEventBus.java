@@ -38,7 +38,6 @@ public class EasyEventBus {
         }
     };
 
-
     private Dispatcher mDispatcher = new Dispatcher();
 
     private EasyEventBus() {

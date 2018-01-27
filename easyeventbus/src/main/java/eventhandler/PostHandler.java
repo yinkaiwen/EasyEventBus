@@ -1,7 +1,6 @@
 package eventhandler;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import core.Print;
 import wrap.Subscription;

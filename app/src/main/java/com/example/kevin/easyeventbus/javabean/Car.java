@@ -8,7 +8,4 @@ package com.example.kevin.easyeventbus.javabean;
 public interface Car {
     int getPrice();
     int getColor();
-
-
-
 }

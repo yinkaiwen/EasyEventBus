@@ -7,6 +7,8 @@ import wrap.EventTagAndParameter;
 /**
  * Created by kevin on 2018/1/27.
  * https://github.com/yinkaiwen
+ *
+ * Match case strictly,no superclass and interface.
  */
 
 public class SeekMethodsMatchCase implements SeekMethodsModel {
