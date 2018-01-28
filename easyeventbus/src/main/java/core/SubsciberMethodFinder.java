@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import easyeventbusenum.EasyEventBusModel;
+import wrap.EasyEventBusModel;
 import wrap.EventTagAndParameter;
 import wrap.Subscriber;
 import wrap.Subscription;

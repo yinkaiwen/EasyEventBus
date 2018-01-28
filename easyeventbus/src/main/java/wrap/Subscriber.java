@@ -5,8 +5,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import easyeventbusenum.EasyEventBusModel;
-
 /**
  * Created by kevin on 2018/1/25.
  * https://github.com/yinkaiwen

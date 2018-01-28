@@ -23,7 +23,7 @@ import com.example.kevin.easyeventbus.service.BtnThirdService;
 
 import core.EasyEventBus;
 import core.Print;
-import easyeventbusenum.EasyEventBusModel;
+import wrap.EasyEventBusModel;
 import wrap.Subscriber;
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -43,6 +43,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Button mBtn3;
     private Button mBtn4;
     private Button mBtn5;
+    private Button mBtn6;
+    private Button mBtn7;
     private TextView mTv_info;
 
     // End Of Content View Elements
@@ -54,6 +56,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mBtn3 = (Button) findViewById(R.id.btn3);
         mBtn4 = (Button) findViewById(R.id.btn4);
         mBtn5 = (Button) findViewById(R.id.btn5);
+        mBtn6 = (Button) findViewById(R.id.btn6);
+        mBtn7 = (Button) findViewById(R.id.btn7);
         mTv_info = (TextView) findViewById(R.id.tv_info);
     }
 
@@ -64,6 +68,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mBtn3.setOnClickListener(this);
         mBtn4.setOnClickListener(this);
         mBtn5.setOnClickListener(this);
+        mBtn6.setOnClickListener(this);
+        mBtn7.setOnClickListener(this);
     }
 
     @Override
@@ -83,6 +89,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.btn5:
                 startService(new Intent(this, BtnFifthService.class));
+                break;
+            case R.id.btn6:
+                EasyEventBus.getDefault().postSticky(new Auto());
+                startActivity(new Intent(this, StickyActivity.class));
+                break;
+            case R.id.btn7:
+                EasyEventBus.getDefault().registerSticky(this);
                 break;
         }
     }
@@ -122,7 +135,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     @Subscriber
-    private void fourthInfo(Yard yard){
+    private void fourthInfo(Yard yard) {
         String rs = String.format("Yard : Price : %s,Color : %s,Weight : %s",
                 yard.getPrice(), yard.getColor(), yard.getWeight());
         Print.i(tag, rs);
@@ -164,5 +177,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onStop() {
         EasyEventBus.getDefault().unregister(this);
         super.onStop();
+    }
+
+    @Subscriber(tag = "StickyActivity")
+    private void getStickyEventInfo(Machine machine){
+        String rs = machine.getWeight()+"";
+        mTv_info.setText(rs);
+        EasyEventBus.getDefault().unregisterSticky(this);
     }
 }

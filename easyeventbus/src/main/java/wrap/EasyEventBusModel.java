@@ -1,4 +1,4 @@
-package easyeventbusenum;
+package wrap;
 
 /**
  * Created by kevin on 2018/1/25.

@@ -4,8 +4,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 
-import easyeventbusenum.EasyEventBusModel;
-
 /**
  * Created by kevin on 2018/1/26.
  * https://github.com/yinkaiwen

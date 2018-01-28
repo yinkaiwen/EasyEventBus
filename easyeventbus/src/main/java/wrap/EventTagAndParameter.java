@@ -1,9 +1,5 @@
 package wrap;
 
-import java.lang.reflect.Method;
-
-import easyeventbusenum.EasyEventBusModel;
-
 /**
  * Created by kevin on 2018/1/25.
  * https://github.com/yinkaiwen
@@ -12,6 +8,7 @@ import easyeventbusenum.EasyEventBusModel;
 public class EventTagAndParameter {
     public String tag;
     public Class<?> parameterClass;
+    public Object arg;
 
 
     public EventTagAndParameter(String tag, Class<?> parameterClass) {

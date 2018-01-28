@@ -16,6 +16,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name=".StickyActivity"/>
         <service android:name=".service.BtnFirstService"/>
         <service android:name=".service.BtnSecondService"/>
         <service android:name=".service.BtnThirdService"/>
