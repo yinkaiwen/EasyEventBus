@@ -5,19 +5,20 @@ import android.text.TextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import wrap.EasyEventBusModel;
 import eventhandler.AsyncHandler;
 import eventhandler.PostHandler;
 import eventhandler.TaskHandler;
 import eventhandler.UIHandler;
 import seekmethods.SeekMethodsIncludeInterface;
 import seekmethods.SeekMethodsModel;
+import wrap.EasyEventBusModel;
 import wrap.EventTagAndParameter;
 import wrap.Subscriber;
 import wrap.Subscription;
@@ -83,14 +84,6 @@ public class EasyEventBus {
         mDispatcher.dispatchSticky(subscriber);
     }
 
-    public void unregisterSticky(Object subscriber) {
-        unregister(subscriber);
-
-        if (stickyCache.contains(subscriber)) {
-            stickyCache.remove(subscriber);
-        }
-    }
-
     public <T> void post(T arg) {
         post(arg, Subscriber.DEFAULT_TAG);
     }
@@ -115,9 +108,25 @@ public class EasyEventBus {
         stickyCache.add(event);
     }
 
-    public <T> void removeSticky(T arg, String tag) {
-        EventTagAndParameter event = new EventTagAndParameter(tag, arg.getClass());
-        stickyCache.remove(event);
+    public void removeSticky(Class<?> cls) {
+        removeSticky(cls, Subscriber.DEFAULT_TAG);
+    }
+
+    public void removeSticky(Class<?> cls, String tag) {
+        removeSticky(cls, tag, true);
+    }
+
+    public void removeSticky(Class<?> cls, String tag, boolean includeSuperClassAndInterface) {
+        Iterator<EventTagAndParameter> iterator = stickyCache.iterator();
+        while (iterator.hasNext()) {
+            EventTagAndParameter event = iterator.next();
+            Class<?> targetClass = event.parameterClass;
+            if (tag.equals(event.tag) &&
+                    (cls.equals(targetClass) || targetClass.isAssignableFrom(cls))
+                    ) {
+                iterator.remove();
+            }
+        }
     }
 
     public void removeAllSticky() {
@@ -155,7 +164,7 @@ public class EasyEventBus {
             if (list.isEmpty())
                 return;
             mCacheList.put(event, list);
-            TaskHandler handler = null;
+            TaskHandler handler;
             for (EventTagAndParameter e : list) {
                 CopyOnWriteArrayList<Subscription> subscriptions = mCache.get(e);
                 if (subscriptions == null)
@@ -168,17 +177,17 @@ public class EasyEventBus {
         }
 
 
-        public void dispatchSticky(Object subscriber) {
+        void dispatchSticky(Object subscriber) {
             for (EventTagAndParameter e : stickyCache) {
                 handlerSticky(e, subscriber);
             }
         }
 
-        public void handlerSticky(EventTagAndParameter event, Object subscriber) {
+        void handlerSticky(EventTagAndParameter event, Object subscriber) {
             //Find methods which matches event.
             CopyOnWriteArrayList<EventTagAndParameter> list = mMethodsModel.getMethodEvent(event);
             Object arg = event.arg;
-            TaskHandler handler = null;
+            TaskHandler handler;
             for (EventTagAndParameter e : list) {
                 CopyOnWriteArrayList<Subscription> subscriptions = mCache.get(e);
                 if (subscriptions == null)
@@ -201,11 +210,11 @@ public class EasyEventBus {
             return handler;
         }
 
-        public SeekMethodsModel getMethodsModel() {
+        SeekMethodsModel getMethodsModel() {
             return mMethodsModel;
         }
 
-        public void setMethodsModel(SeekMethodsModel methodsModel) {
+        void setMethodsModel(SeekMethodsModel methodsModel) {
             mMethodsModel = methodsModel;
         }
     }

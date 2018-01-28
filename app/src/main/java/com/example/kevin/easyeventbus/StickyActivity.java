@@ -6,10 +6,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.example.kevin.easyeventbus.javabean.Auto;
 import com.example.kevin.easyeventbus.javabean.Car;
+import com.example.kevin.easyeventbus.javabean.Machine;
 import com.example.kevin.easyeventbus.javabean.Truck;
 
 import core.EasyEventBus;
+import core.Print;
 import wrap.Subscriber;
 
 /**
@@ -56,15 +59,25 @@ public class StickyActivity extends Activity implements View.OnClickListener {
                 EasyEventBus.getDefault().registerSticky(this);
                 break;
             case R.id.btn_post_sticky:
-                EasyEventBus.getDefault().postSticky(new Truck(),"StickyActivity");
+                EasyEventBus.getDefault().postSticky(new Truck(), "StickyActivity");
                 break;
         }
     }
 
     @Subscriber
-    private void getMainActivityStickyInfo(Car car) {
-        if (car != null)
-            mTv_info.setText(car.toString());
-        EasyEventBus.getDefault().unregisterSticky(this);
+    private void getMainActivityStickyInfo(Auto auto) {
+        if (auto != null){
+            mTv_info.setText(auto.toString());
+            Print.i(tag,auto.toString());
+        }else{
+            Print.i(tag,"auto -- null");
+        }
+        EasyEventBus.getDefault().removeSticky(Auto.class);
+    }
+
+    @Override
+    protected void onStop() {
+        EasyEventBus.getDefault().unregister(this);
+        super.onStop();
     }
 }

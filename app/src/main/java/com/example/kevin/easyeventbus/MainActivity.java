@@ -183,6 +183,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private void getStickyEventInfo(Machine machine){
         String rs = machine.getWeight()+"";
         mTv_info.setText(rs);
-        EasyEventBus.getDefault().unregisterSticky(this);
+        EasyEventBus.getDefault().removeSticky(Machine.class,"StickyActivity");
     }
 }
